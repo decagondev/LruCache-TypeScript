@@ -2,7 +2,7 @@ class LRUCache<T> {
   private capacity: number;
   private cache: Map<string, { key: string; value: T; prev: string | null; next: string | null }>;
   private head: string | null;
-  private tail: string | null;
+  protected tail: string | null;
 
   constructor(capacity: number) {
     this.capacity = capacity;
@@ -67,15 +67,19 @@ class LRUCache<T> {
     return undefined;
   }
 
-  put(key: string, value: T): void {
+  protected put(key: string, value: T): boolean {
+    let retVal = false;
     if (this.cache.has(key)) {
       this.removeNode(key);
+      retVal = true;
     } else if (this.cache.size >= this.capacity) {
       if (this.tail !== null) {
         this.removeNode(this.tail);
+        retVal = true;
       }
     }
     this.addToFront(key, value);
+    return retVal;
   }
 
   display(): void {
@@ -93,14 +97,23 @@ class LRUCache<T> {
 }
 
 
-const cache = new LRUCache<number>(3000);
+const remove = (key : string) : void  => {
 
-cache.put('a', 1);
-cache.put('b', 2);
-cache.put('c', 3);
-cache.put('d', 4);
+  console.log("Remove [", key, "]");
+}
+const add = <T>(key : string, value: T) : void  => {
+  console.log("Add [", key, "->", value, "]");
+}
 
+class DLRUCache<T> extends LRUCache<T> {
 
-console.log(cache.get('b')); 
+  put(key: string, value: T): boolean {
+    const curTail = {key: this.tail};
+    const isPut = super.put(key, value);
+    if(isPut) remove(curTail.key);
+    add<T>(key, value);
+    return true;
+  }
 
-cache.display();
+}
+
